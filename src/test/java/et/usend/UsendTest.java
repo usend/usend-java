@@ -222,6 +222,19 @@ public final class UsendTest {
             } catch (UsendException e) {
                 check(e.getStatusCode() == 0 && e.getErrorName().equals("application_error"), "network error mapping");
             }
+        
+            int slBase = seen.size();
+            Map<String, Object> link = new LinkedHashMap<>();
+            link.put("target_url", "https://example.com");
+            link.put("code", "abc");
+            u.shortLinks.create(link);
+            u.shortLinks.stats("l 1", 7);
+            u.shortLinks.stats("l1", null);
+            u.shortLinks.remove("l1");
+            check(seen.get(slBase).startsWith("POST /short-links | {\"target_url\":\"https://example.com\",\"code\":\"abc\"}"), "short link create: " + seen.get(slBase));
+            check(seen.get(slBase + 1).startsWith("GET /short-links/l%201/stats?days=7 |"), "short link stats: " + seen.get(slBase + 1));
+            check(seen.get(slBase + 2).startsWith("GET /short-links/l1/stats |"), "short link stats default: " + seen.get(slBase + 2));
+            check(seen.get(slBase + 3).startsWith("DELETE /short-links/l1 |"), "short link remove: " + seen.get(slBase + 3));
         } finally {
             server.stop(0);
         }

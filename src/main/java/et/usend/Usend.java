@@ -30,7 +30,7 @@ import java.util.UUID;
  * and idempotent requests that hit a 5xx or a network error, are retried with backoff.
  */
 public final class Usend {
-    public static final String VERSION = "1.0.0";
+    public static final String VERSION = "1.3.0";
     public static final String DEFAULT_BASE_URL = "https://api.usend.et";
     static final String DEFAULT_SMTP_HOST = "smtp.usend.et";
 
@@ -63,6 +63,7 @@ public final class Usend {
     public final Segments segments = new Segments(this);
     public final Contacts contacts = new Contacts(this);
     public final Topics topics = new Topics(this);
+    public final ShortLinks shortLinks = new ShortLinks(this);
     public final Broadcasts broadcasts = new Broadcasts(this);
     public final Webhooks webhooks = new Webhooks(this);
     public final Suppressions suppressions = new Suppressions(this);
@@ -449,6 +450,20 @@ public final class Usend {
 
     public static final class Topics extends Crud {
         Topics(Usend c) { super(c, "/topics"); }
+    }
+
+    /**
+     * Short links on the shared tracking host that redirect to a target URL and count clicks. Create with
+     * {@code {"target_url": "...", "code": "sale"}}; update takes {@code target_url}, {@code title}, {@code disabled} and
+     * {@code expires_at} (null clears the expiry).
+     */
+    public static final class ShortLinks extends Crud {
+        ShortLinks(Usend c) { super(c, "/short-links"); }
+
+        /** Click statistics for the last {@code days} days (1 to 365; null = 30). */
+        public Map<String, Object> stats(String id, Integer days) {
+            return c.request("GET", "/short-links/" + enc(id) + "/stats" + qs(days == null ? null : Map.of("days", days)), null, null);
+        }
     }
 
     public static final class Broadcasts extends Crud {

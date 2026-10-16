@@ -5,7 +5,7 @@
 
   <groupId>et.usend</groupId>
   <artifactId>usend</artifactId>
-  <version>1.0.0</version>
+  <version>1.3.0</version>
   <packaging>jar</packaging>
 
   <name>usend</name>
@@ -19,8 +19,19 @@
     </license>
   </licenses>
 
+  <developers>
+    <developer>
+      <name>usend</name>
+      <email>sdk@usend.et</email>
+      <organization>usend</organization>
+      <organizationUrl>https://usend.et</organizationUrl>
+    </developer>
+  </developers>
+
   <scm>
     <url>https://github.com/usend/usend-java</url>
+    <connection>scm:git:https://github.com/usend/usend-java.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/usend/usend-java.git</developerConnection>
   </scm>
 
   <properties>
@@ -37,4 +48,70 @@
       </plugin>
     </plugins>
   </build>
+
+  <profiles>
+    <!-- mvn -Prelease deploy: what Maven Central requires (sources and javadoc jars, signatures) and the portal upload.
+         The release workflow supplies the credentials; locally add -Dgpg.skip to build the jars without signing. -->
+    <profile>
+      <id>release</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <version>3.3.1</version>
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <goals><goal>jar-no-fork</goal></goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>3.11.2</version>
+            <configuration>
+              <doclint>none</doclint>
+              <release>11</release>
+            </configuration>
+            <executions>
+              <execution>
+                <id>attach-javadocs</id>
+                <goals><goal>jar</goal></goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>3.2.7</version>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals><goal>sign</goal></goals>
+                <configuration>
+                  <gpgArguments>
+                    <arg>--pinentry-mode</arg>
+                    <arg>loopback</arg>
+                  </gpgArguments>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.sonatype.central</groupId>
+            <artifactId>central-publishing-maven-plugin</artifactId>
+            <version>0.7.0</version>
+            <extensions>true</extensions>
+            <configuration>
+              <publishingServerId>central</publishingServerId>
+              <autoPublish>true</autoPublish>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>
